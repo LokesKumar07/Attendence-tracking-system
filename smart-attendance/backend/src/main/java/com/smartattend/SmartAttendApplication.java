@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.Optional;
 
 @SpringBootApplication
 @EnableScheduling
@@ -19,7 +20,16 @@ public class SmartAttendApplication {
     @Bean
     public CommandLineRunner seedDatabase(TeacherRepository teacherRepository, PasswordEncoder passwordEncoder) {
         return args -> {
-            if (teacherRepository.findByUsername("lathika").isEmpty()) {
+            Optional<Teacher> teacherOpt = teacherRepository.findByUsername("lathika");
+            if (teacherOpt.isPresent()) {
+                System.out.println("Updating password for default teacher 'lathika' to ensure it matches 'lathika123'...");
+                Teacher lathika = teacherOpt.get();
+                lathika.setPasswordHash(passwordEncoder.encode("lathika123"));
+                lathika.setFailedLoginAttempts(0);
+                lathika.setLockoutUntil(null);
+                teacherRepository.save(lathika);
+                System.out.println("Default teacher password updated successfully!");
+            } else {
                 System.out.println("Seeding default teacher 'lathika'...");
                 Teacher lathika = Teacher.builder()
                         .username("lathika")
