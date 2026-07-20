@@ -27,6 +27,11 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/debug-teachers")
+    public ResponseEntity<?> debugTeachers() {
+        return ResponseEntity.ok(authService.getTeacherUsernames());
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<Map<String, String>> logout(@Valid @RequestBody RefreshTokenRequest request, HttpServletRequest servletRequest) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();

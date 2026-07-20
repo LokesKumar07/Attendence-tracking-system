@@ -225,4 +225,8 @@ public class AuthService {
                 .build();
         loginAttemptRepository.save(attempt);
     }
+
+    public List<String> getTeacherUsernames() {
+        return teacherRepository.findAll().stream().map(Teacher::getUsername).toList();
+    }
 }
