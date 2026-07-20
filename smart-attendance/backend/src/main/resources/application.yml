@@ -1,0 +1,56 @@
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: never
+
+spring:
+  application:
+    name: smart-attend-backend
+  datasource:
+    url: ${DATABASE_URL:jdbc:mysql://localhost:3306/smart_attendance?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Kolkata&allowPublicKeyRetrieval=true}
+    username: ${DATABASE_USERNAME:root}
+    password: ${DATABASE_PASSWORD:2406}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    clean-on-validation-error: true
+    clean-disabled: false
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+app:
+  timezone: Asia/Kolkata
+  jwt:
+    secret: ${JWT_SECRET:407f3f2d3e1d6c8b9a0f4e3c2b1a0f9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a207f3f2d3e1d6c8b9a0f4e3c2b1a0f9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a}
+    access-expiration: ${JWT_ACCESS_EXPIRATION:900000} # 15 mins in millis
+    refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7 days in millis
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    com.smartattend: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: INFO
