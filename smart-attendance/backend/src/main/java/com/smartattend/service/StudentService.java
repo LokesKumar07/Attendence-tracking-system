@@ -195,7 +195,7 @@ public class StudentService {
                 String name = getCellValueAsString(row.getCell(nameIdx));
                 String deptCode = deptIdx != -1 ? getCellValueAsString(row.getCell(deptIdx)) : "COM";
                 String academicYearName = ayIdx != -1 ? getCellValueAsString(row.getCell(ayIdx)) : "2026-2027";
-                String semName = semIdx != -1 ? getCellValueAsString(row.getCell(semName)) : "ODD";
+                String semName = semIdx != -1 ? getCellValueAsString(row.getCell(semIdx)) : "ODD";
                 String classSecName = classIdx != -1 ? getCellValueAsString(row.getCell(classIdx)) : "I B.Com";
                 String yearStr = yearIdx != -1 ? getCellValueAsString(row.getCell(yearIdx)) : "1";
                 String email = emailIdx != -1 ? getCellValueAsString(row.getCell(emailIdx)) : "";
