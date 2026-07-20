@@ -220,11 +220,6 @@ public class StudentService {
             rollNum = registerNum;
         }
 
-        if (studentRepository.existsByRegisterNumber(registerNum)) {
-            // Overwrite existing or skip? Let's skip to keep details intact, or update if user prefers
-            return;
-        }
-
         Department department = departmentRepository.findByCode(deptCode)
                 .orElseGet(() -> departmentRepository.save(Department.builder().code(deptCode).name(deptCode + " Department").build()));
 
@@ -242,19 +237,25 @@ public class StudentService {
             yearOfStudy = Integer.parseInt(yearStr.trim());
         } catch (Exception ignored) {}
 
-        Student student = Student.builder()
-                .registerNumber(registerNum)
-                .rollNumber(rollNum)
-                .name(name)
-                .department(department)
-                .academicYear(ay)
-                .semester(sem)
-                .classSection(section)
-                .yearOfStudy(yearOfStudy)
-                .email(email)
-                .phoneNumber(phone)
-                .isActive(true)
-                .build();
+        Optional<Student> existingOpt = studentRepository.findByRegisterNumber(registerNum);
+        Student student;
+        if (existingOpt.isPresent()) {
+            student = existingOpt.get();
+        } else {
+            student = new Student();
+            student.setRegisterNumber(registerNum);
+        }
+
+        student.setRollNumber(rollNum);
+        student.setName(name);
+        student.setDepartment(department);
+        student.setAcademicYear(ay);
+        student.setSemester(sem);
+        student.setClassSection(section);
+        student.setYearOfStudy(yearOfStudy);
+        student.setEmail(email);
+        student.setPhoneNumber(phone);
+        student.setIsActive(true);
 
         java.util.Set<Subject> enrolled = new java.util.HashSet<>();
         if (subjectsStr != null && !subjectsStr.isBlank()) {
