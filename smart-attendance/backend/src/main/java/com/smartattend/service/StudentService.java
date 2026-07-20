@@ -150,8 +150,9 @@ public class StudentService {
                 String yearStr = record.get("Year of Study");
                 String email = record.isMapped("Email") ? record.get("Email") : "";
                 String phone = record.isMapped("Phone Number") ? record.get("Phone Number") : "";
+                String subjectsStr = record.isMapped("Subjects") ? record.get("Subjects") : "";
 
-                saveImportedRecord(registerNum, rollNum, name, deptCode, academicYearName, semName, classSecName, yearStr, email, phone);
+                saveImportedRecord(registerNum, rollNum, name, deptCode, academicYearName, semName, classSecName, yearStr, email, phone, subjectsStr);
                 count++;
             }
         }
@@ -165,7 +166,7 @@ public class StudentService {
             Row header = sheet.getRow(0);
             if (header == null) throw new InvalidRequestException("Empty spreadsheet");
 
-            int regIdx = -1, rollIdx = -1, nameIdx = -1, deptIdx = -1, ayIdx = -1, semIdx = -1, classIdx = -1, yearIdx = -1, emailIdx = -1, phoneIdx = -1;
+            int regIdx = -1, rollIdx = -1, nameIdx = -1, deptIdx = -1, ayIdx = -1, semIdx = -1, classIdx = -1, yearIdx = -1, emailIdx = -1, phoneIdx = -1, subIdx = -1;
             for (Cell cell : header) {
                 String title = cell.getStringCellValue().trim().toLowerCase();
                 if (title.contains("register")) regIdx = cell.getColumnIndex();
@@ -178,6 +179,7 @@ public class StudentService {
                 else if (title.contains("year of study")) yearIdx = cell.getColumnIndex();
                 else if (title.contains("email")) emailIdx = cell.getColumnIndex();
                 else if (title.contains("phone")) phoneIdx = cell.getColumnIndex();
+                else if (title.contains("subject")) subIdx = cell.getColumnIndex();
             }
 
             if (regIdx == -1 || nameIdx == -1) {
@@ -193,13 +195,14 @@ public class StudentService {
                 String name = getCellValueAsString(row.getCell(nameIdx));
                 String deptCode = deptIdx != -1 ? getCellValueAsString(row.getCell(deptIdx)) : "COM";
                 String academicYearName = ayIdx != -1 ? getCellValueAsString(row.getCell(ayIdx)) : "2026-2027";
-                String semName = semIdx != -1 ? getCellValueAsString(row.getCell(semIdx)) : "ODD";
+                String semName = semIdx != -1 ? getCellValueAsString(row.getCell(semName)) : "ODD";
                 String classSecName = classIdx != -1 ? getCellValueAsString(row.getCell(classIdx)) : "I B.Com";
                 String yearStr = yearIdx != -1 ? getCellValueAsString(row.getCell(yearIdx)) : "1";
                 String email = emailIdx != -1 ? getCellValueAsString(row.getCell(emailIdx)) : "";
                 String phone = phoneIdx != -1 ? getCellValueAsString(row.getCell(phoneIdx)) : "";
+                String subjectsStr = subIdx != -1 ? getCellValueAsString(row.getCell(subIdx)) : "";
 
-                saveImportedRecord(registerNum, rollNum, name, deptCode, academicYearName, semName, classSecName, yearStr, email, phone);
+                saveImportedRecord(registerNum, rollNum, name, deptCode, academicYearName, semName, classSecName, yearStr, email, phone, subjectsStr);
                 count++;
             }
         }
@@ -208,7 +211,7 @@ public class StudentService {
 
     private void saveImportedRecord(String registerNum, String rollNum, String name, String deptCode,
                                     String academicYearName, String semName, String classSecName, String yearStr,
-                                    String email, String phone) {
+                                    String email, String phone, String subjectsStr) {
 
         if (registerNum == null || registerNum.isBlank() || name == null || name.isBlank()) {
             throw new InvalidRequestException("Register Number and Name are mandatory for all students");
@@ -253,8 +256,21 @@ public class StudentService {
                 .isActive(true)
                 .build();
 
-        java.util.List<Subject> semesterSubjects = subjectRepository.findBySemesterId(sem.getId());
-        student.setEnrolledSubjects(new java.util.HashSet<>(semesterSubjects));
+        java.util.Set<Subject> enrolled = new java.util.HashSet<>();
+        if (subjectsStr != null && !subjectsStr.isBlank()) {
+            String[] codes = subjectsStr.split(",");
+            for (String code : codes) {
+                String cleanCode = code.trim();
+                if (!cleanCode.isEmpty()) {
+                    subjectRepository.findByCode(cleanCode).ifPresent(enrolled::add);
+                }
+            }
+        }
+        if (enrolled.isEmpty()) {
+            java.util.List<Subject> semesterSubjects = subjectRepository.findBySemesterId(sem.getId());
+            enrolled.addAll(semesterSubjects);
+        }
+        student.setEnrolledSubjects(enrolled);
 
         studentRepository.save(student);
     }
